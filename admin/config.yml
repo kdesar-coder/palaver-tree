@@ -30,6 +30,15 @@ collections:
                 name: "subtitle"
                 widget: "string"
                 required: false
+              - label: "Cover image"
+                name: "image"
+                widget: "image"
+                required: false
+                hint: "Shown at the top of the piece and in the gallery. A landscape photo usually looks best."
+              - label: "Image caption"
+                name: "caption"
+                widget: "string"
+                required: false
               - label: "Department"
                 name: "dept"
                 widget: "select"
