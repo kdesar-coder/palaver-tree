@@ -36,7 +36,7 @@ collections:
                   - { label: "Short Stories", value: "stories" }
                   - { label: "Think Pieces", value: "think" }
                   - { label: "In Plain Words", value: "plain" }
-              - { name: "date", label: "Date", widget: "date", format: "YYYY-MM-DD" }
+             - { name: "date", label: "Date", widget: "datetime", type: date, format: "YYYY-MM-DD" }
               - { name: "tags", label: "Tags", widget: "list", required: false }
               - name: "body"
                 label: "The piece"
