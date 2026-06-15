@@ -461,12 +461,17 @@
     for(var i=0;i<PIECES.length;i++){ if(PIECES[i].slug === slug) return PIECES[i]; }
     return null;
   }
+  function normPath(s){
+    if(!s) return "";
+    if(/^https?:\/\//.test(s) || s.charAt(0) === "/") return s;
+    return "/" + s.replace(/^\.?\//, "");
+  }
   function imgSrc(p){
-    var v = p && p.image;
-    if(!v) return "";
-    if(typeof v === "string") return v;
-    if(typeof v === "object") return v.path || v.src || "";
-    return "";
+    var v = p && p.image, s = "";
+    if(!v) s = "";
+    else if(typeof v === "string") s = v;
+    else if(typeof v === "object") s = v.path || v.src || "";
+    return normPath(s);
   }
   function withImages(){ return PIECES.filter(function(p){ return imgSrc(p); }).sort(byNewest); }
   var slideTimer = null;
@@ -713,7 +718,7 @@
   document.getElementById("webbg").innerHTML = webSvg("kd-web-bg", true);
   renderNav(parseRoute());
 
-  fetch("./content/pieces.json", { cache:"no-store" })
+  fetch("/content/pieces.json", { cache:"no-store" })
     .then(function(r){ if(!r.ok) throw new Error("no content"); return r.json(); })
     .then(function(data){ PIECES = assignSlugs((data && data.pieces) || []); loaded = true; render(); })
     .catch(function(){ PIECES = []; loaded = true; render(); });
