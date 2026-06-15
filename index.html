@@ -3,8 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Palaver Tree</title>
-<meta name="description" content="The Palaver Tree. Poems, short stories, think pieces, and plain spoken scholarship by Kobby Duncan." />
+<title>The Palaver Tree · poems, stories, and plain scholarship by Kobby Duncan</title>
+<meta name="description" content="Poems, short stories, think pieces, and plain spoken scholarship by Kobby Duncan, writer, playwright, and scholar." />
+<link rel="canonical" href="https://thepalavertree.pages.dev/" />
+<meta property="og:site_name" content="The Palaver Tree" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Palaver Tree" />
+<meta property="og:description" content="Poems, short stories, think pieces, and plain spoken scholarship by Kobby Duncan." />
+<meta property="og:url" content="https://thepalavertree.pages.dev/" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="The Palaver Tree" />
+<meta name="twitter:description" content="Poems, short stories, think pieces, and plain spoken scholarship by Kobby Duncan." />
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600&display=swap');
 
@@ -280,7 +289,7 @@
   <div class="kd-shell">
     <header class="kd-mast">
       <div class="kd-mast-left">
-        <a class="kd-wordmark" href="#/">The Palaver Tree</a>
+        <a class="kd-wordmark" href="/">The Palaver Tree</a>
         <p class="kd-byline">Kobby Duncan<span class="kd-byline-sep">·</span><span class="kd-byline-tag">stories, verse, and plain scholarship</span></p>
       </div>
       <nav class="kd-nav" id="nav"></nav>
@@ -292,7 +301,7 @@
       <span class="kd-foot-dot">·</span>
       <button class="kd-foot-link" id="randomBtn">Open something at random</button>
       <span class="kd-foot-dot">·</span>
-      <a class="kd-foot-link" href="admin/">Editor</a>
+      <a class="kd-foot-link" href="/admin/">Editor</a>
     </footer>
   </div>
 </div>
@@ -317,6 +326,36 @@
   var CUSDIS_APP_ID = "7b45a84e-6542-4965-8a25-a3e6eb36bebe";
   var CUSDIS_HOST = "https://cusdis.com";
   function commentsEnabled(){ return CUSDIS_APP_ID && CUSDIS_APP_ID.indexOf("PASTE-YOUR") !== 0; }
+
+  // ---- search engine titles and descriptions ----
+  var SITE_NAME = "The Palaver Tree";
+  var SITE_DESC = "Poems, short stories, think pieces, and plain spoken scholarship by Kobby Duncan, writer, playwright, and scholar.";
+  function setTag(sel, attr, val){ var el = document.head.querySelector(sel); if(el) el.setAttribute(attr, val); }
+  function setMeta(title, desc, path){
+    document.title = title;
+    var url = location.origin + (path || "/");
+    setTag('meta[name="description"]', 'content', desc);
+    setTag('link[rel="canonical"]', 'href', url);
+    setTag('meta[property="og:title"]', 'content', title);
+    setTag('meta[property="og:description"]', 'content', desc);
+    setTag('meta[property="og:url"]', 'content', url);
+    setTag('meta[name="twitter:title"]', 'content', title);
+    setTag('meta[name="twitter:description"]', 'content', desc);
+  }
+  function applyMeta(route){
+    if(route.name === "read"){
+      var rp = findBySlug(route.slug);
+      if(rp){ setMeta(rp.title + " \u00b7 " + SITE_NAME, excerpt(rp.body, 155), "/read/" + rp.slug); return; }
+    } else if(route.name === "dept"){
+      var dd = null; DEPARTMENTS.forEach(function(x){ if(x.key === route.dept) dd = x; });
+      if(dd){ setMeta(dd.label + " \u00b7 " + SITE_NAME, dd.note + ", from " + SITE_NAME + ".", "/" + dd.key); return; }
+    } else if(route.name === "tag"){
+      setMeta("Tagged " + route.tag + " \u00b7 " + SITE_NAME, "Pieces tagged " + route.tag + ", from " + SITE_NAME + ".", "/tag/" + encodeURIComponent(route.tag)); return;
+    } else if(route.name === "gallery"){
+      setMeta("Gallery \u00b7 " + SITE_NAME, "Images from " + SITE_NAME + ", each a door to its piece.", "/gallery"); return;
+    }
+    setMeta(SITE_NAME + " \u00b7 poems, stories, and plain scholarship", SITE_DESC, "/");
+  }
 
   var root = document.getElementById("root");
   var main = document.getElementById("main");
@@ -404,13 +443,17 @@
   }
 
   function parseRoute(){
-    var parts = location.hash.replace(/^#/,"").split("/").filter(Boolean);
+    var parts = location.pathname.replace(/\/+$/,"").split("/").filter(Boolean);
     if(parts.length === 0) return { name:"home" };
-    if(parts[0] === "dept") return { name:"dept", dept:parts[1] };
     if(parts[0] === "read") return { name:"read", slug:decodeURIComponent(parts[1]||"") };
     if(parts[0] === "tag")  return { name:"tag",  tag:decodeURIComponent(parts[1]||"") };
     if(parts[0] === "gallery") return { name:"gallery" };
+    for(var i=0;i<DEPARTMENTS.length;i++){ if(DEPARTMENTS[i].key === parts[0]) return { name:"dept", dept:parts[0] }; }
     return { name:"home" };
+  }
+  function navigate(path){
+    if(location.pathname !== path){ history.pushState(null, "", path); }
+    render();
   }
 
   function deptList(key){ return PIECES.filter(function(p){ return p.dept === key; }).sort(byNewest); }
@@ -432,9 +475,9 @@
   function renderNav(route){
     var html = DEPARTMENTS.map(function(d){
       var on = (route.name === "dept" && route.dept === d.key) ? " is-on" : "";
-      return '<a class="kd-navlink' + on + '" href="#/dept/' + d.key + '">' + esc(d.label) + '</a>';
+      return '<a class="kd-navlink' + on + '" href="/' + d.key + '">' + esc(d.label) + '</a>';
     }).join("");
-    html += '<a class="kd-navlink' + (route.name === "gallery" ? " is-on" : "") + '" href="#/gallery">Gallery</a>';
+    html += '<a class="kd-navlink' + (route.name === "gallery" ? " is-on" : "") + '" href="/gallery">Gallery</a>';
     html += '<button class="kd-lamp" id="lampBtn" title="' + (theme === "evening" ? "Turn up the light" : "Dim the light") + '" aria-label="Toggle light">' + lampSvg() + '</button>';
     nav.innerHTML = html;
     document.getElementById("lampBtn").onclick = function(){
@@ -446,7 +489,7 @@
   }
 
   function card(p, withDept){
-    return '<article class="kd-card"><a class="kd-card-link" href="#/read/' + p.slug + '">' +
+    return '<article class="kd-card"><a class="kd-card-link" href="/read/' + p.slug + '">' +
       (withDept ? '<span class="kd-card-dept">' + esc(DEPT_LABEL[p.dept]||"") + '</span>' : '') +
       '<h3 class="kd-card-title">' + esc(p.title) + '</h3>' +
       (p.subtitle ? '<p class="kd-card-sub">' + esc(p.subtitle) + '</p>' : '') +
@@ -461,15 +504,15 @@
       var list = deptList(d.key);
       html += '<article class="kd-dept kd-rise" style="animation-delay:' + (120 + i*90) + 'ms">';
       html += '<div class="kd-dept-head"><span class="kd-dept-num">' + d.roman + '</span>' +
-              '<a class="kd-dept-label" href="#/dept/' + d.key + '">' + esc(d.label) + '</a>' +
+              '<a class="kd-dept-label" href="/' + d.key + '">' + esc(d.label) + '</a>' +
               '<span class="kd-dept-note">' + esc(d.note) + '</span>' +
               (list.length ? '<span class="kd-dept-count">' + list.length + '</span>' : '') + '</div>';
       html += '<div class="kd-entries">';
       if(!list.length) html += '<p class="kd-empty">Nothing here yet. This department is waiting for its first piece.</p>';
       list.slice(0,3).forEach(function(p){
-        html += '<a class="kd-entry" href="#/read/' + p.slug + '"><span class="kd-entry-title">' + esc(p.title) + '</span><span class="kd-entry-dots" aria-hidden="true"></span><span class="kd-entry-year">' + yearOf(p.date) + '</span></a>';
+        html += '<a class="kd-entry" href="/read/' + p.slug + '"><span class="kd-entry-title">' + esc(p.title) + '</span><span class="kd-entry-dots" aria-hidden="true"></span><span class="kd-entry-year">' + yearOf(p.date) + '</span></a>';
       });
-      if(list.length > 3) html += '<a class="kd-more" href="#/dept/' + d.key + '">all ' + list.length + ' pieces \u203a</a>';
+      if(list.length > 3) html += '<a class="kd-more" href="/' + d.key + '">all ' + list.length + ' pieces \u203a</a>';
       html += '</div></article>';
     });
     html += '</section>';
@@ -481,7 +524,7 @@
     DEPARTMENTS.forEach(function(x){ if(x.key === key) d = x; });
     if(!d) return viewHome();
     var list = deptList(key);
-    var html = '<section class="kd-rise"><a class="kd-back" href="#/">\u2039 contents</a>';
+    var html = '<section class="kd-rise"><a class="kd-back" href="/">\u2039 contents</a>';
     html += '<header class="kd-dept-banner"><span class="kd-dept-num kd-big">' + d.roman + '</span><h2 class="kd-dept-title">' + esc(d.label) + '</h2><p class="kd-dept-note">' + esc(d.note) + '</p></header><div class="kd-rule"></div>';
     if(!list.length) html += '<div class="kd-empty-block"><p class="kd-empty">No pieces here yet.</p></div>';
     list.forEach(function(p){ html += card(p, false); });
@@ -491,7 +534,7 @@
 
   function viewTag(tag){
     var list = PIECES.filter(function(p){ return (p.tags||[]).indexOf(tag) >= 0; }).sort(byNewest);
-    var html = '<section class="kd-rise"><a class="kd-back" href="#/">\u2039 contents</a>';
+    var html = '<section class="kd-rise"><a class="kd-back" href="/">\u2039 contents</a>';
     html += '<header class="kd-dept-banner"><p class="kd-eyebrow">Tagged</p><h2 class="kd-dept-title">' + esc(tag) + '</h2><p class="kd-dept-note">' + list.length + ' ' + (list.length === 1 ? "piece" : "pieces") + '</p></header><div class="kd-rule"></div>';
     list.forEach(function(p){ html += card(p, true); });
     html += '</section>';
@@ -507,7 +550,7 @@
     var prev = idx > 0 ? sibs[idx-1] : null;
     var next = (idx >= 0 && idx < sibs.length-1) ? sibs[idx+1] : null;
 
-    var html = '<section class="kd-rise"><a class="kd-back" href="#/dept/' + p.dept + '">\u2039 ' + esc(DEPT_LABEL[p.dept]) + '</a>';
+    var html = '<section class="kd-rise"><a class="kd-back" href="/' + p.dept + '">\u2039 ' + esc(DEPT_LABEL[p.dept]) + '</a>';
     html += '<div class="kd-leaf">' + webSvg("kd-web-leaf", false);
     if(imgSrc(p)){
       html += '<img class="kd-leaf-image" src="' + esc(imgSrc(p)) + '" alt="' + esc(p.title) + '" />';
@@ -520,7 +563,7 @@
     html += '<div class="kd-body">' + bodyHtml(p.body) + '</div>';
     if((p.tags||[]).length){
       html += '<div class="kd-tags">' + p.tags.map(function(t){
-        return '<a class="kd-tag" href="#/tag/' + encodeURIComponent(t) + '">' + esc(t) + '</a>';
+        return '<a class="kd-tag" href="/tag/' + encodeURIComponent(t) + '">' + esc(t) + '</a>';
       }).join("") + '</div>';
     }
     html += '<p class="kd-read-date">' + esc(fmtFull(p.date)) + '</p>';
@@ -528,13 +571,13 @@
 
     if(prev || next){
       html += '<div class="kd-pager">';
-      html += prev ? '<a class="kd-pager-btn" href="#/read/' + prev.slug + '"><span class="kd-pager-dir">\u2039 Newer in ' + esc(DEPT_LABEL[p.dept]) + '</span><span class="kd-pager-title">' + esc(prev.title) + '</span></a>' : '<span></span>';
-      html += next ? '<a class="kd-pager-btn kd-pager-right" href="#/read/' + next.slug + '"><span class="kd-pager-dir">Older in ' + esc(DEPT_LABEL[p.dept]) + ' \u203a</span><span class="kd-pager-title">' + esc(next.title) + '</span></a>' : '<span></span>';
+      html += prev ? '<a class="kd-pager-btn" href="/read/' + prev.slug + '"><span class="kd-pager-dir">\u2039 Newer in ' + esc(DEPT_LABEL[p.dept]) + '</span><span class="kd-pager-title">' + esc(prev.title) + '</span></a>' : '<span></span>';
+      html += next ? '<a class="kd-pager-btn kd-pager-right" href="/read/' + next.slug + '"><span class="kd-pager-dir">Older in ' + esc(DEPT_LABEL[p.dept]) + ' \u203a</span><span class="kd-pager-title">' + esc(next.title) + '</span></a>' : '<span></span>';
       html += '</div>';
     }
     if(commentsEnabled()){
       html += '<div class="kd-comments"><h3 class="kd-comments-head">Responses</h3>' +
-        '<div id="cusdis_thread" data-host="' + CUSDIS_HOST + '" data-app-id="' + esc(CUSDIS_APP_ID) + '" data-page-id="' + esc(p.slug) + '" data-page-url="' + esc(location.origin + location.pathname + "#/read/" + p.slug) + '" data-page-title="' + esc(p.title) + '" data-theme="auto"></div>' +
+        '<div id="cusdis_thread" data-host="' + CUSDIS_HOST + '" data-app-id="' + esc(CUSDIS_APP_ID) + '" data-page-id="' + esc(p.slug) + '" data-page-url="' + esc(location.origin + "/read/" + p.slug) + '" data-page-title="' + esc(p.title) + '" data-theme="auto"></div>' +
         '<p class="kd-comments-note">Comments appear once approved.</p></div>';
     }
     html += '</section>';
@@ -543,7 +586,7 @@
 
   function viewGallery(){
     var list = withImages();
-    var html = '<section class="kd-rise"><a class="kd-back" href="#/">\u2039 contents</a>';
+    var html = '<section class="kd-rise"><a class="kd-back" href="/">\u2039 contents</a>';
     html += '<header class="kd-dept-banner"><p class="kd-eyebrow">Gallery</p><h2 class="kd-dept-title">In Pictures</h2><p class="kd-dept-note">images from the collection, each a door to its piece</p></header><div class="kd-rule"></div>';
     if(!list.length){
       html += '<p class="kd-empty">No pictures yet. Add a cover image to a piece in the editor and it will appear here.</p></section>';
@@ -551,7 +594,7 @@
     }
     html += '<div class="kd-slideshow" id="slideshow">';
     list.forEach(function(p,i){
-      html += '<a class="kd-slide' + (i===0 ? " is-active" : "") + '" href="#/read/' + p.slug + '" style="background-image:url(\'' + esc(imgSrc(p)) + '\')">' +
+      html += '<a class="kd-slide' + (i===0 ? " is-active" : "") + '" href="/read/' + p.slug + '" style="background-image:url(\'' + esc(imgSrc(p)) + '\')">' +
               '<span class="kd-slide-cap"><span class="kd-slide-dept">' + esc(DEPT_LABEL[p.dept]||"") + '</span><span class="kd-slide-title">' + esc(p.title) + '</span><span class="kd-slide-go">read this piece \u203a</span></span></a>';
     });
     html += '</div>';
@@ -562,7 +605,7 @@
     }
     html += '<div class="kd-gallery">';
     list.forEach(function(p){
-      html += '<a class="kd-tile" href="#/read/' + p.slug + '" style="background-image:url(\'' + esc(imgSrc(p)) + '\')">' +
+      html += '<a class="kd-tile" href="/read/' + p.slug + '" style="background-image:url(\'' + esc(imgSrc(p)) + '\')">' +
               '<span class="kd-tile-overlay"><span class="kd-tile-dept">' + esc(DEPT_LABEL[p.dept]||"") + '</span><span class="kd-tile-title">' + esc(p.title) + '</span></span></a>';
     });
     html += '</div></section>';
@@ -617,6 +660,7 @@
     var route = parseRoute();
     clearSlideshow();
     renderNav(route);
+    applyMeta(route);
     if(!loaded){ main.innerHTML = '<p class="kd-loading">Lighting the lamp\u2026</p>'; return; }
     var html;
     if(route.name === "dept") html = viewDept(route.dept);
@@ -645,12 +689,24 @@
   document.getElementById("randomBtn").onclick = function(){
     if(!PIECES.length) return;
     var p = PIECES[Math.floor(Math.random()*PIECES.length)];
-    location.hash = "#/read/" + p.slug;
+    navigate("/read/" + p.slug);
   };
+
+  document.addEventListener("click", function(e){
+    if(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest ? e.target.closest("a") : null;
+    if(!a) return;
+    var href = a.getAttribute("href");
+    if(!href || href.charAt(0) !== "/") return;     // only internal paths
+    if(href.indexOf("/admin") === 0) return;          // let the editor load as a normal page
+    if(a.target === "_blank") return;
+    e.preventDefault();
+    navigate(href);
+  });
 
   window.addEventListener("scroll", updateProgress, { passive:true });
   window.addEventListener("resize", updateProgress);
-  window.addEventListener("hashchange", render);
+  window.addEventListener("popstate", render);
 
   applyTheme();
   buildEmbers();
