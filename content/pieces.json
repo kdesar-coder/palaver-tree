@@ -94,6 +94,7 @@
     {
       "title": "When the Wounded Begin to Wound",
       "subtitle": "A South Africa gone south",
+      "image": "/assets/uploads/Xenophobia.jpeg",
       "caption": "",
       "dept": "think",
       "date": "2026-06-15",
@@ -106,6 +107,8 @@
     {
       "title": "Born to the Craft",
       "subtitle": "West Africa's Hereditary Artists",
+      "image": "/assets/uploads/caste system.jpeg",
+      "caption": "",
       "dept": "plain",
       "date": "2026-06-15",
       "tags": [
