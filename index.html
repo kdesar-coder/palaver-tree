@@ -230,6 +230,46 @@
 .kd-root a{ text-decoration:none; }
 .kd-progress{ transition:width .08s linear, opacity .25s ease; }
 .kd-foot-link{ font:inherit; }
+
+/* cover image on a piece */
+.kd-leaf-image{ width:100%; border-radius:2px; display:block; margin:0 0 22px; }
+.kd-leaf-caption{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.02em; color:var(--leaf-muted); margin:-12px 0 24px; text-align:center; }
+
+/* slideshow */
+.kd-slideshow{ position:relative; width:100%; height:430px; border-radius:3px; overflow:hidden; margin-top:8px; box-shadow:0 22px 54px rgba(0,0,0,.42); background:var(--surface); }
+.kd-slide{ position:absolute; inset:0; background-size:cover; background-position:center; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity 1s ease; }
+.kd-slide.is-active{ opacity:1; pointer-events:auto; }
+.kd-slide-cap{ width:100%; padding:30px 32px; background:linear-gradient(to top, rgba(20,15,10,.86), rgba(20,15,10,.15) 70%, rgba(20,15,10,0)); color:#f0e7d4; }
+.kd-slide-dept{ display:block; font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.22em; font-size:11px; color:var(--gilt); margin-bottom:7px; }
+.kd-slide-title{ display:block; font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:32px; line-height:1.1; }
+.kd-slide-go{ display:inline-block; font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.06em; color:#e9dcc2; margin-top:10px; opacity:0; transform:translateY(4px); transition:opacity .3s ease, transform .3s ease; }
+.kd-slide:hover .kd-slide-go{ opacity:1; transform:none; }
+.kd-dots{ display:flex; gap:8px; justify-content:center; margin:16px 0 0; }
+.kd-dot{ width:8px; height:8px; border-radius:50%; border:none; background:var(--line); cursor:pointer; padding:0; transition:background .2s, transform .2s; }
+.kd-dot.is-active{ background:var(--gilt); transform:scale(1.35); }
+
+/* gallery grid */
+.kd-gallery{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-top:36px; }
+.kd-tile{ position:relative; aspect-ratio:1 / 1; background-size:cover; background-position:center; border-radius:2px; overflow:hidden; }
+.kd-tile-overlay{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:16px; color:#f1e8d5; opacity:0; transition:opacity .3s ease; background:linear-gradient(to top, rgba(20,15,10,.88), rgba(20,15,10,.05) 62%, rgba(20,15,10,0)); }
+.kd-tile:hover .kd-tile-overlay, .kd-tile:focus-visible .kd-tile-overlay{ opacity:1; }
+.kd-tile-dept{ font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.16em; font-size:10px; color:var(--gilt); margin-bottom:5px; }
+.kd-tile-title{ font-family:'Fraunces', Georgia, serif; font-size:18px; line-height:1.15; }
+
+@media (max-width:640px){
+  .kd-slideshow{ height:280px; }
+  .kd-slide-cap{ padding:22px 20px; }
+  .kd-slide-title{ font-size:23px; }
+  .kd-slide-go{ opacity:1; transform:none; }
+  .kd-gallery{ grid-template-columns:repeat(2, 1fr); gap:8px; }
+  .kd-tile-overlay{ opacity:1; background:linear-gradient(to top, rgba(20,15,10,.82), rgba(20,15,10,0) 75%); }
+}
+
+/* comments */
+.kd-comments{ margin-top:42px; padding-top:30px; border-top:1px solid var(--line); }
+.kd-comments-head{ font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:22px; color:var(--strong); margin:0 0 18px; }
+.kd-comments-note{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.02em; color:var(--muted); margin:14px 0 0; }
+#cusdis_thread{ color-scheme:normal; }
 </style>
 </head>
 <body>
@@ -271,6 +311,12 @@
   var PIECES = [];
   var loaded = false;
   var theme = localStorage.getItem("pt-theme") || "evening";
+
+  // ---- comments (Cusdis) ----
+  // Paste your Cusdis App ID between the quotes below, replacing the placeholder.
+  var CUSDIS_APP_ID = "7b45a84e-6542-4965-8a25-a3e6eb36bebe";
+  var CUSDIS_HOST = "https://cusdis.com";
+  function commentsEnabled(){ return CUSDIS_APP_ID && CUSDIS_APP_ID.indexOf("PASTE-YOUR") !== 0; }
 
   var root = document.getElementById("root");
   var main = document.getElementById("main");
@@ -363,6 +409,7 @@
     if(parts[0] === "dept") return { name:"dept", dept:parts[1] };
     if(parts[0] === "read") return { name:"read", slug:decodeURIComponent(parts[1]||"") };
     if(parts[0] === "tag")  return { name:"tag",  tag:decodeURIComponent(parts[1]||"") };
+    if(parts[0] === "gallery") return { name:"gallery" };
     return { name:"home" };
   }
 
@@ -371,12 +418,23 @@
     for(var i=0;i<PIECES.length;i++){ if(PIECES[i].slug === slug) return PIECES[i]; }
     return null;
   }
+  function imgSrc(p){
+    var v = p && p.image;
+    if(!v) return "";
+    if(typeof v === "string") return v;
+    if(typeof v === "object") return v.path || v.src || "";
+    return "";
+  }
+  function withImages(){ return PIECES.filter(function(p){ return imgSrc(p); }).sort(byNewest); }
+  var slideTimer = null;
+  function clearSlideshow(){ if(slideTimer){ clearInterval(slideTimer); slideTimer = null; } }
 
   function renderNav(route){
     var html = DEPARTMENTS.map(function(d){
       var on = (route.name === "dept" && route.dept === d.key) ? " is-on" : "";
       return '<a class="kd-navlink' + on + '" href="#/dept/' + d.key + '">' + esc(d.label) + '</a>';
     }).join("");
+    html += '<a class="kd-navlink' + (route.name === "gallery" ? " is-on" : "") + '" href="#/gallery">Gallery</a>';
     html += '<button class="kd-lamp" id="lampBtn" title="' + (theme === "evening" ? "Turn up the light" : "Dim the light") + '" aria-label="Toggle light">' + lampSvg() + '</button>';
     nav.innerHTML = html;
     document.getElementById("lampBtn").onclick = function(){
@@ -451,6 +509,10 @@
 
     var html = '<section class="kd-rise"><a class="kd-back" href="#/dept/' + p.dept + '">\u2039 ' + esc(DEPT_LABEL[p.dept]) + '</a>';
     html += '<div class="kd-leaf">' + webSvg("kd-web-leaf", false);
+    if(imgSrc(p)){
+      html += '<img class="kd-leaf-image" src="' + esc(imgSrc(p)) + '" alt="' + esc(p.title) + '" />';
+      if(p.caption) html += '<p class="kd-leaf-caption">' + esc(p.caption) + '</p>';
+    }
     html += '<p class="kd-read-eyebrow">' + esc(DEPT_LABEL[p.dept]) + ' \u00b7 ' + yearOf(p.date) + ' \u00b7 ' + readTime(p.body) + '</p>';
     html += '<h1 class="kd-title">' + esc(p.title) + '</h1>';
     if(p.subtitle) html += '<p class="kd-subtitle">' + esc(p.subtitle) + '</p>';
@@ -470,8 +532,77 @@
       html += next ? '<a class="kd-pager-btn kd-pager-right" href="#/read/' + next.slug + '"><span class="kd-pager-dir">Older in ' + esc(DEPT_LABEL[p.dept]) + ' \u203a</span><span class="kd-pager-title">' + esc(next.title) + '</span></a>' : '<span></span>';
       html += '</div>';
     }
+    if(commentsEnabled()){
+      html += '<div class="kd-comments"><h3 class="kd-comments-head">Responses</h3>' +
+        '<div id="cusdis_thread" data-host="' + CUSDIS_HOST + '" data-app-id="' + esc(CUSDIS_APP_ID) + '" data-page-id="' + esc(p.slug) + '" data-page-url="' + esc(location.origin + location.pathname + "#/read/" + p.slug) + '" data-page-title="' + esc(p.title) + '" data-theme="auto"></div>' +
+        '<p class="kd-comments-note">Comments appear once approved.</p></div>';
+    }
     html += '</section>';
     return html;
+  }
+
+  function viewGallery(){
+    var list = withImages();
+    var html = '<section class="kd-rise"><a class="kd-back" href="#/">\u2039 contents</a>';
+    html += '<header class="kd-dept-banner"><p class="kd-eyebrow">Gallery</p><h2 class="kd-dept-title">In Pictures</h2><p class="kd-dept-note">images from the collection, each a door to its piece</p></header><div class="kd-rule"></div>';
+    if(!list.length){
+      html += '<p class="kd-empty">No pictures yet. Add a cover image to a piece in the editor and it will appear here.</p></section>';
+      return html;
+    }
+    html += '<div class="kd-slideshow" id="slideshow">';
+    list.forEach(function(p,i){
+      html += '<a class="kd-slide' + (i===0 ? " is-active" : "") + '" href="#/read/' + p.slug + '" style="background-image:url(\'' + esc(imgSrc(p)) + '\')">' +
+              '<span class="kd-slide-cap"><span class="kd-slide-dept">' + esc(DEPT_LABEL[p.dept]||"") + '</span><span class="kd-slide-title">' + esc(p.title) + '</span><span class="kd-slide-go">read this piece \u203a</span></span></a>';
+    });
+    html += '</div>';
+    if(list.length > 1){
+      html += '<div class="kd-dots" id="dots">';
+      list.forEach(function(p,i){ html += '<button class="kd-dot' + (i===0 ? " is-active" : "") + '" data-i="' + i + '" aria-label="Slide ' + (i+1) + '"></button>'; });
+      html += '</div>';
+    }
+    html += '<div class="kd-gallery">';
+    list.forEach(function(p){
+      html += '<a class="kd-tile" href="#/read/' + p.slug + '" style="background-image:url(\'' + esc(imgSrc(p)) + '\')">' +
+              '<span class="kd-tile-overlay"><span class="kd-tile-dept">' + esc(DEPT_LABEL[p.dept]||"") + '</span><span class="kd-tile-title">' + esc(p.title) + '</span></span></a>';
+    });
+    html += '</div></section>';
+    return html;
+  }
+
+  function setupGallery(){
+    var slideshow = document.getElementById("slideshow");
+    if(!slideshow) return;
+    var slides = slideshow.querySelectorAll(".kd-slide");
+    var dots = document.querySelectorAll("#dots .kd-dot");
+    if(slides.length <= 1) return;
+    var idx = 0;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function show(n){
+      idx = (n + slides.length) % slides.length;
+      for(var i=0;i<slides.length;i++){ slides[i].classList.toggle("is-active", i === idx); }
+      for(var j=0;j<dots.length;j++){ dots[j].classList.toggle("is-active", j === idx); }
+    }
+    function restart(){ clearSlideshow(); if(!reduce){ slideTimer = setInterval(function(){ show(idx + 1); }, 4800); } }
+    for(var d=0; d<dots.length; d++){
+      (function(k){ dots[k].addEventListener("click", function(e){ e.preventDefault(); show(k); restart(); }); })(d);
+    }
+    slideshow.addEventListener("mouseenter", clearSlideshow);
+    slideshow.addEventListener("mouseleave", restart);
+    restart();
+  }
+
+  function ensureCusdisScript(){
+    if(document.getElementById("cusdis-sdk")) return;
+    var s = document.createElement("script");
+    s.id = "cusdis-sdk"; s.async = true; s.defer = true;
+    s.src = CUSDIS_HOST + "/js/cusdis.es.js";
+    document.body.appendChild(s);
+  }
+  function setupComments(){
+    if(!commentsEnabled()) return;
+    if(!document.getElementById("cusdis_thread")) return;
+    ensureCusdisScript();
+    if(window.CUSDIS && typeof window.CUSDIS.initial === "function"){ window.CUSDIS.initial(); }
   }
 
   function updateProgress(){
@@ -484,15 +615,19 @@
 
   function render(){
     var route = parseRoute();
+    clearSlideshow();
     renderNav(route);
     if(!loaded){ main.innerHTML = '<p class="kd-loading">Lighting the lamp\u2026</p>'; return; }
     var html;
     if(route.name === "dept") html = viewDept(route.dept);
     else if(route.name === "tag") html = viewTag(route.tag);
     else if(route.name === "read") html = viewRead(route.slug);
+    else if(route.name === "gallery") html = viewGallery();
     else html = viewHome();
     main.innerHTML = html;
     window.scrollTo(0,0);
+    if(route.name === "gallery") setupGallery();
+    if(route.name === "read") setupComments();
     updateProgress();
   }
 
