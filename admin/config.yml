@@ -4,7 +4,7 @@
 
 backend:
   name: github
-  repo: kobbyduncan/palaver-tree
+  repo: kdesar-coder/palaver-tree
   branch: main
 
 # Where uploaded images would go, if you add any later
