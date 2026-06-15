@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Palaver Tree</title>
+<meta name="description" content="The Palaver Tree. Poems, short stories, think pieces, and plain spoken scholarship by Kobby Duncan." />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600&display=swap');
+
+.kd-root{
+  min-height:100vh;
+  font-family:'Newsreader', Georgia, 'Times New Roman', serif;
+  font-size:18px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  position:relative; overflow-x:hidden;
+  transition:background .6s ease, color .6s ease;
+}
+.kd-evening{
+  --bg:#19130e; --surface:#241c16; --line:#3a2e22;
+  --text:#b9ac93; --strong:#e9e0cd; --muted:#8c7f68;
+  --leaf-bg-a:#efe7d6; --leaf-bg-b:#e9e0cd; --leaf-text:#2c2114; --leaf-strong:#211810; --leaf-muted:#5f5034; --leaf-line:rgba(120,90,40,.16);
+  --gilt:#c99a4b; --gilt-soft:#a98441; --on-gilt:#19130e;
+  background:radial-gradient(120% 80% at 50% -10%, #221a13 0%, #19130e 55%) fixed;
+  color:var(--text);
+}
+.kd-day{
+  --bg:#ece3d0; --surface:#e2d7bf; --line:#cebf9d;
+  --text:#4a3f2c; --strong:#2a2014; --muted:#7d6e52;
+  --leaf-bg-a:#fdf9ef; --leaf-bg-b:#f7f0e1; --leaf-text:#33281a; --leaf-strong:#241a10; --leaf-muted:#6a5a3c; --leaf-line:rgba(120,90,40,.2);
+  --gilt:#a9772f; --gilt-soft:#8a6126; --on-gilt:#fbf6ea;
+  background:radial-gradient(120% 80% at 50% -10%, #f4eddc 0%, #e7ddc7 60%) fixed;
+  color:var(--text);
+}
+
+.kd-shell{ max-width:860px; margin:0 auto; padding:40px 28px 64px; position:relative; z-index:1; }
+
+/* ambient embers */
+.kd-embers{ position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
+.kd-ember{
+  position:fixed; bottom:-12px; border-radius:50%;
+  background:radial-gradient(circle, #f0c074 0%, #c9772f 70%, rgba(201,119,47,0) 100%);
+  box-shadow:0 0 8px rgba(216,150,70,.5);
+  animation:kdEmber var(--dur,20s) linear var(--delay,0s) infinite;
+}
+.kd-day .kd-embers{ opacity:0; }
+@keyframes kdEmber{
+  0%{ transform:translateY(0) translateX(0); opacity:0; }
+  12%{ opacity:.5; }
+  50%{ transform:translateY(-52vh) translateX(var(--dx,0)); opacity:.35; }
+  88%{ opacity:.12; }
+  100%{ transform:translateY(-108vh) translateX(0); opacity:0; }
+}
+
+/* reading progress */
+.kd-progress{ position:fixed; top:0; left:0; height:2px; background:var(--gilt); z-index:60; box-shadow:0 0 8px var(--gilt); transition:width .08s linear; }
+
+/* masthead */
+.kd-mast{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; }
+.kd-wordmark{ font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:36px; letter-spacing:.2px; color:var(--strong); background:none; border:none; padding:0; cursor:pointer; line-height:1; }
+.kd-wordmark:hover{ color:var(--gilt); }
+.kd-byline{ font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.22em; font-size:11px; color:var(--muted); margin:11px 0 0; }
+.kd-byline-sep{ margin:0 9px; color:var(--gilt-soft); }
+.kd-byline-tag{ text-transform:none; letter-spacing:.02em; font-style:italic; }
+.kd-nav{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.kd-navlink{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); background:none; border:none; padding:4px 0; cursor:pointer; position:relative; transition:color .18s ease; }
+.kd-navlink:hover, .kd-navlink.is-on{ color:var(--strong); }
+.kd-navlink.is-on::after{ content:""; position:absolute; left:0; right:0; bottom:-2px; height:1px; background:var(--gilt); }
+.kd-lamp{ display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border:1px solid var(--line); border-radius:50%; background:none; color:var(--gilt); cursor:pointer; transition:border-color .2s, transform .4s, color .2s; }
+.kd-lamp:hover{ border-color:var(--gilt); transform:rotate(35deg); }
+.kd-cta{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12.5px; letter-spacing:.06em; color:var(--on-gilt); background:var(--gilt); border:none; padding:8px 16px; border-radius:1px; cursor:pointer; transition:background .2s; }
+.kd-cta:hover{ filter:brightness(1.08); }
+.kd-mast-rule{ position:relative; height:1px; background:linear-gradient(90deg, var(--gilt) 0%, var(--line) 30%, var(--line) 100%); margin:22px 0 40px; opacity:.75; }
+
+/* contents */
+.kd-contents-head{ display:flex; justify-content:space-between; align-items:baseline; }
+.kd-eyebrow{ font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.3em; font-size:12px; color:var(--gilt); margin:0; }
+.kd-issue{ font-style:italic; color:var(--muted); margin:0; font-size:15px; }
+.kd-rule{ height:1px; background:var(--line); margin:14px 0 30px; }
+
+.kd-dept{ margin:0 0 36px; }
+.kd-dept-head{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.kd-dept-num{ font-family:'Fraunces', Georgia, serif; color:var(--gilt-soft); font-size:18px; font-style:italic; width:22px; }
+.kd-dept-num.kd-big{ font-size:40px; width:auto; }
+.kd-dept-label{ font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:24px; color:var(--strong); background:none; border:none; padding:0; cursor:pointer; transition:color .18s; }
+.kd-dept-label:hover{ color:var(--gilt); }
+.kd-dept-note{ font-style:italic; color:var(--muted); font-size:15px; }
+.kd-dept-count{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:11px; color:var(--gilt-soft); border:1px solid var(--line); border-radius:999px; padding:1px 8px; margin-left:auto; }
+.kd-entries{ margin:14px 0 0 36px; display:flex; flex-direction:column; }
+.kd-entry{ position:relative; display:flex; align-items:baseline; gap:8px; width:100%; background:none; border:none; padding:7px 0; cursor:pointer; text-align:left; color:var(--text); transition:padding-left .2s ease; }
+.kd-entry::before{ content:""; position:absolute; left:-2px; top:50%; width:5px; height:5px; border-radius:50%; background:var(--gilt); opacity:0; transform:translateY(-50%) scale(.5); transition:opacity .2s, transform .2s; }
+.kd-entry:hover{ padding-left:16px; }
+.kd-entry:hover::before{ opacity:1; transform:translateY(-50%) scale(1); }
+.kd-entry-title{ font-size:18px; color:var(--text); transition:color .18s ease; }
+.kd-entry:hover .kd-entry-title{ color:var(--strong); }
+.kd-entry-dots{ flex:1; border-bottom:1px dotted var(--line); transform:translateY(-3px); }
+.kd-entry-year{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; color:var(--muted); letter-spacing:.05em; }
+.kd-more{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--gilt-soft); background:none; border:none; padding:8px 0 0; cursor:pointer; text-align:left; transition:color .18s; }
+.kd-more:hover{ color:var(--gilt); }
+.kd-empty{ font-style:italic; color:var(--muted); margin:6px 0; }
+
+/* department banner */
+.kd-dept-banner{ margin-top:8px; }
+.kd-dept-title{ font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:38px; color:var(--strong); margin:6px 0 4px; }
+.kd-empty-block{ display:flex; flex-direction:column; align-items:flex-start; gap:16px; padding:8px 0 20px; }
+
+/* cards */
+.kd-card{ border-bottom:1px solid var(--line); }
+.kd-card-link{ display:block; width:100%; text-align:left; background:none; border:none; cursor:pointer; padding:24px 0 24px 0; border-left:2px solid transparent; transition:padding-left .22s ease, border-color .22s ease; }
+.kd-card-link:hover{ padding-left:18px; border-left-color:var(--gilt); }
+.kd-card-dept{ display:block; font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.16em; font-size:10.5px; color:var(--gilt-soft); margin-bottom:8px; }
+.kd-card-title{ font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:24px; color:var(--strong); margin:0; transition:color .18s ease; }
+.kd-card-link:hover .kd-card-title{ color:var(--gilt); }
+.kd-card-sub{ font-style:italic; color:var(--muted); margin:4px 0 0; }
+.kd-card-excerpt{ color:var(--text); margin:10px 0 0; }
+.kd-card-meta{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.06em; color:var(--muted); margin:10px 0 0; }
+
+/* reading leaf */
+.kd-leaf{ position:relative; background:linear-gradient(180deg, var(--leaf-bg-a) 0%, var(--leaf-bg-b) 100%); color:var(--leaf-text); border-radius:2px; padding:54px 56px 44px; box-shadow:0 24px 60px rgba(0,0,0,.4), inset 0 0 0 1px var(--leaf-line); margin-top:6px; overflow:hidden; }
+.kd-day .kd-leaf{ box-shadow:0 18px 44px rgba(110,84,40,.18), inset 0 0 0 1px var(--leaf-line); }
+.kd-leaf::before{ content:""; position:absolute; inset:0; pointer-events:none; opacity:.05; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.kd-read-eyebrow{ font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.22em; font-size:11px; color:var(--gilt-soft); margin:0 0 18px; position:relative; }
+.kd-title{ font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:42px; line-height:1.1; color:var(--leaf-strong); margin:0; position:relative; }
+.kd-subtitle{ font-style:italic; font-size:20px; color:var(--leaf-muted); margin:12px 0 0; position:relative; }
+.kd-leaf-rule{ width:54px; height:2px; background:var(--gilt-soft); margin:26px 0; }
+.kd-body{ font-size:19px; line-height:1.78; color:var(--leaf-text); position:relative; }
+.kd-body p{ margin:0 0 20px; }
+.kd-lead{ margin-top:0; }
+.kd-dropcap{ font-family:'Fraunces', Georgia, serif; font-weight:600; float:left; font-size:62px; line-height:.82; padding:6px 12px 0 0; color:var(--gilt-soft); }
+.kd-tags{ display:flex; flex-wrap:wrap; gap:8px; margin:30px 0 0; position:relative; }
+.kd-tag{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:11px; letter-spacing:.08em; text-transform:lowercase; color:var(--leaf-muted); background:none; border:1px solid var(--leaf-line); border-radius:999px; padding:3px 11px; cursor:pointer; transition:border-color .18s, color .18s; }
+.kd-tag:hover{ border-color:var(--gilt-soft); color:var(--gilt-soft); }
+.kd-read-date{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.05em; color:var(--leaf-muted); margin:22px 0 0; position:relative; }
+
+/* pager */
+.kd-pager{ display:flex; justify-content:space-between; gap:16px; margin-top:28px; }
+.kd-pager-btn{ display:flex; flex-direction:column; gap:4px; max-width:48%; background:none; border:none; cursor:pointer; text-align:left; padding:0; }
+.kd-pager-right{ text-align:right; align-items:flex-end; }
+.kd-pager-dir{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.kd-pager-title{ font-family:'Fraunces', Georgia, serif; color:var(--text); font-size:16px; transition:color .18s; }
+.kd-pager-btn:hover .kd-pager-title{ color:var(--gilt); }
+
+.kd-piece-actions{ display:flex; gap:12px; margin-top:24px; }
+
+/* back link */
+.kd-back{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:13px; letter-spacing:.05em; color:var(--muted); background:none; border:none; padding:0 0 22px; cursor:pointer; transition:color .18s; }
+.kd-back:hover{ color:var(--gilt); }
+
+/* form */
+.kd-form{ margin-top:24px; }
+.kd-field{ margin-bottom:22px; }
+.kd-row2{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.kd-label{ display:block; font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.14em; font-size:11px; color:var(--muted); margin-bottom:8px; }
+.kd-opt{ text-transform:none; letter-spacing:0; font-style:italic; color:var(--muted); margin-left:6px; opacity:.8; }
+.kd-input{ width:100%; box-sizing:border-box; background:var(--surface); color:var(--strong); border:1px solid var(--line); border-radius:2px; padding:12px 14px; font-family:'Newsreader', Georgia, serif; font-size:17px; transition:border-color .18s, box-shadow .18s; }
+.kd-input::placeholder{ color:var(--muted); opacity:.7; }
+.kd-input:focus{ outline:none; border-color:var(--gilt); box-shadow:0 0 0 2px rgba(201,154,75,.22); }
+.kd-textarea{ resize:vertical; line-height:1.6; min-height:240px; }
+.kd-select{ appearance:none; }
+.kd-actions{ display:flex; gap:12px; margin-top:8px; }
+
+/* buttons */
+.kd-btn{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:13px; letter-spacing:.05em; cursor:pointer; border-radius:2px; padding:11px 20px; border:1px solid transparent; transition:filter .18s, border-color .18s, color .18s; }
+.kd-btn-primary{ background:var(--gilt); color:var(--on-gilt); }
+.kd-btn-primary:hover{ filter:brightness(1.08); }
+.kd-btn-primary:disabled{ opacity:.4; cursor:not-allowed; }
+.kd-btn-ghost{ background:none; color:var(--text); border-color:var(--line); }
+.kd-btn-ghost:hover{ border-color:var(--gilt); color:var(--strong); }
+.kd-btn-quiet{ background:none; color:var(--muted); }
+.kd-btn-quiet:hover{ color:#c98b6a; }
+
+/* misc */
+.kd-loading{ font-style:italic; color:var(--muted); padding:40px 0; }
+.kd-foot{ margin-top:64px; padding-top:22px; border-top:1px solid var(--line); font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.08em; color:var(--muted); display:flex; gap:10px; align-items:center; }
+.kd-foot-dot{ color:var(--gilt-soft); }
+.kd-foot-link{ background:none; border:none; color:var(--muted); cursor:pointer; font:inherit; letter-spacing:.08em; transition:color .18s; }
+.kd-foot-link:hover{ color:var(--gilt); }
+
+/* spider web */
+.kd-web{ color:var(--gilt); pointer-events:none; }
+.kd-web-bg{ position:fixed; top:0; right:0; width:300px; height:300px; transform:scaleX(-1); opacity:.2; z-index:0; filter:drop-shadow(0 0 4px rgba(201,154,75,.22)); }
+.kd-day .kd-web-bg{ opacity:.15; filter:none; }
+.kd-web-leaf{ position:absolute; top:0; right:0; width:118px; height:118px; transform:scaleX(-1); color:var(--gilt-soft); opacity:.14; z-index:0; }
+.kd-web-glint{ stroke:#f3d79e; stroke-width:0.9; opacity:0; filter:drop-shadow(0 0 3px rgba(240,200,120,.55)); animation:kdGlint 9.5s ease-in-out infinite; }
+.kd-day .kd-web-glint{ animation:none; opacity:0; }
+@keyframes kdGlint{
+  0%,100%{ opacity:0; }
+  9%{ opacity:.5; }
+  18%{ opacity:.06; }
+  41%{ opacity:.34; }
+  53%{ opacity:0; }
+  72%{ opacity:.46; }
+  85%{ opacity:.08; }
+}
+
+@media (max-width:640px){
+  .kd-web-bg{ width:170px; height:170px; opacity:.13; }
+  .kd-web-leaf{ width:78px; height:78px; }
+}
+
+/* motion */
+@keyframes kdRise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+.kd-rise{ animation:kdRise .5s cubic-bezier(.2,.7,.2,1) both; }
+
+.kd-root :focus-visible{ outline:2px solid var(--gilt); outline-offset:3px; border-radius:2px; }
+
+@media (max-width:640px){
+  .kd-root{ font-size:17px; }
+  .kd-shell{ padding:28px 20px 48px; }
+  .kd-mast{ align-items:flex-start; }
+  .kd-wordmark{ font-size:30px; }
+  .kd-nav{ gap:13px; }
+  .kd-entries{ margin-left:0; }
+  .kd-leaf{ padding:34px 24px 30px; }
+  .kd-title{ font-size:32px; }
+  .kd-dept-title{ font-size:30px; }
+  .kd-row2{ grid-template-columns:1fr; }
+  .kd-dropcap{ font-size:52px; }
+  .kd-pager-btn{ max-width:47%; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .kd-rise{ animation:none; }
+  .kd-embers{ display:none; }
+  .kd-web-glint{ animation:none; opacity:0; }
+  .kd-lamp:hover{ transform:none; }
+  *{ scroll-behavior:auto !important; }
+}
+
+/* static site adjustments */
+.kd-root a{ text-decoration:none; }
+.kd-progress{ transition:width .08s linear, opacity .25s ease; }
+.kd-foot-link{ font:inherit; }
+</style>
+</head>
+<body>
+<div class="kd-root kd-evening" id="root">
+  <div class="kd-embers" id="embers" aria-hidden="true"></div>
+  <div id="webbg"></div>
+  <div class="kd-progress" id="progress" style="width:0;opacity:0"></div>
+  <div class="kd-shell">
+    <header class="kd-mast">
+      <div class="kd-mast-left">
+        <a class="kd-wordmark" href="#/">The Palaver Tree</a>
+        <p class="kd-byline">Kobby Duncan<span class="kd-byline-sep">·</span><span class="kd-byline-tag">stories, verse, and plain scholarship</span></p>
+      </div>
+      <nav class="kd-nav" id="nav"></nav>
+    </header>
+    <div class="kd-mast-rule"></div>
+    <main class="kd-main" id="main"></main>
+    <footer class="kd-foot">
+      <span>The Palaver Tree</span>
+      <span class="kd-foot-dot">·</span>
+      <button class="kd-foot-link" id="randomBtn">Open something at random</button>
+      <span class="kd-foot-dot">·</span>
+      <a class="kd-foot-link" href="admin/">Editor</a>
+    </footer>
+  </div>
+</div>
+
+<script>
+(function(){
+  var DEPARTMENTS = [
+    { key:"poems",   label:"Poems",         roman:"i",   note:"verse and fragments" },
+    { key:"stories", label:"Short Stories", roman:"ii",  note:"fiction, long and short" },
+    { key:"think",   label:"Think Pieces",  roman:"iii", note:"essays and provocations" },
+    { key:"plain",   label:"In Plain Words", roman:"iv", note:"scholarship, made relatable" }
+  ];
+  var DEPT_LABEL = {};
+  DEPARTMENTS.forEach(function(d){ DEPT_LABEL[d.key] = d.label; });
+
+  var PIECES = [];
+  var loaded = false;
+  var theme = localStorage.getItem("pt-theme") || "evening";
+
+  var root = document.getElementById("root");
+  var main = document.getElementById("main");
+  var nav = document.getElementById("nav");
+  var progress = document.getElementById("progress");
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function slugify(s){
+    return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "piece";
+  }
+  function yearOf(iso){ return (iso||"").slice(0,4); }
+  function fmtFull(iso){
+    try { return new Date(iso + "T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}); }
+    catch(e){ return iso; }
+  }
+  function excerpt(b,n){
+    n = n || 150;
+    var f = String(b||"").replace(/\s+/g," ").trim();
+    return f.length > n ? f.slice(0,n).replace(/\s+\S*$/,"") + "\u2026" : f;
+  }
+  function byNewest(a,b){ return (b.date||"").localeCompare(a.date||""); }
+  function readTime(b){
+    var w = String(b||"").trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(w/200)) + " min read";
+  }
+
+  function bodyHtml(body){
+    var paras = String(body||"").split(/\n\s*\n/).filter(function(p){ return p.trim().length; });
+    return paras.map(function(p,i){
+      var lines = p.split("\n");
+      if(i === 0 && /[A-Za-z]/.test(p.charAt(0))){
+        var head = '<span class="kd-dropcap">' + esc(p.charAt(0)) + '</span>' + esc(lines[0].slice(1));
+        var rest = lines.slice(1).map(esc).join("<br>");
+        return '<p class="kd-lead">' + head + (rest ? ("<br>" + rest) : "") + '</p>';
+      }
+      return "<p>" + lines.map(esc).join("<br>") + "</p>";
+    }).join("");
+  }
+
+  function webSvg(extraClass, shimmer){
+    var A = 260;
+    var spokes = [6,22,39,56,73,88].map(function(d){ return d * Math.PI / 180; });
+    var rings = [36,74,120,174,232];
+    function pt(a,r){ return [r*Math.cos(a), r*Math.sin(a)]; }
+    var base = "";
+    spokes.forEach(function(a){
+      var q = pt(a,A);
+      base += '<line x1="0" y1="0" x2="' + q[0].toFixed(1) + '" y2="' + q[1].toFixed(1) + '"/>';
+    });
+    rings.forEach(function(r){
+      for(var i=0;i<spokes.length-1;i++){
+        var p1 = pt(spokes[i],r), p2 = pt(spokes[i+1],r);
+        var cx = ((p1[0]+p2[0])/2*0.86).toFixed(1), cy = ((p1[1]+p2[1])/2*0.86).toFixed(1);
+        base += '<path d="M' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1) + ' Q ' + cx + ' ' + cy + ' ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1) + '"/>';
+      }
+    });
+    var glint = shimmer ? '<g class="kd-web-glint" fill="none" stroke-linecap="round">' + base + '</g>' : '';
+    return '<svg class="kd-web ' + extraClass + '" viewBox="0 0 260 260" fill="none" aria-hidden="true">' +
+           '<g stroke="currentColor" stroke-width="0.7" stroke-linecap="round">' + base + '</g>' + glint + '</svg>';
+  }
+
+  function buildEmbers(){
+    var host = document.getElementById("embers");
+    var html = "";
+    for(var i=0;i<10;i++){
+      var x = (Math.random()*100).toFixed(2);
+      var size = (2 + Math.random()*4).toFixed(1);
+      var dur = (16 + Math.random()*12).toFixed(1);
+      var delay = (Math.random()*16).toFixed(1);
+      var dx = (Math.random()*60 - 30).toFixed(0);
+      html += '<span class="kd-ember" style="left:' + x + '%;width:' + size + 'px;height:' + size + 'px;--dur:' + dur + 's;--delay:' + delay + 's;--dx:' + dx + 'px"></span>';
+    }
+    host.innerHTML = html;
+  }
+
+  function applyTheme(){ root.className = "kd-root " + (theme === "day" ? "kd-day" : "kd-evening"); }
+
+  function lampSvg(){
+    return theme === "evening"
+      ? '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/></svg>'
+      : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.3 6.3 0 0 0 9.5 9.5z"/></svg>';
+  }
+
+  function parseRoute(){
+    var parts = location.hash.replace(/^#/,"").split("/").filter(Boolean);
+    if(parts.length === 0) return { name:"home" };
+    if(parts[0] === "dept") return { name:"dept", dept:parts[1] };
+    if(parts[0] === "read") return { name:"read", slug:decodeURIComponent(parts[1]||"") };
+    if(parts[0] === "tag")  return { name:"tag",  tag:decodeURIComponent(parts[1]||"") };
+    return { name:"home" };
+  }
+
+  function deptList(key){ return PIECES.filter(function(p){ return p.dept === key; }).sort(byNewest); }
+  function findBySlug(slug){
+    for(var i=0;i<PIECES.length;i++){ if(PIECES[i].slug === slug) return PIECES[i]; }
+    return null;
+  }
+
+  function renderNav(route){
+    var html = DEPARTMENTS.map(function(d){
+      var on = (route.name === "dept" && route.dept === d.key) ? " is-on" : "";
+      return '<a class="kd-navlink' + on + '" href="#/dept/' + d.key + '">' + esc(d.label) + '</a>';
+    }).join("");
+    html += '<button class="kd-lamp" id="lampBtn" title="' + (theme === "evening" ? "Turn up the light" : "Dim the light") + '" aria-label="Toggle light">' + lampSvg() + '</button>';
+    nav.innerHTML = html;
+    document.getElementById("lampBtn").onclick = function(){
+      theme = theme === "evening" ? "day" : "evening";
+      localStorage.setItem("pt-theme", theme);
+      applyTheme();
+      renderNav(parseRoute());
+    };
+  }
+
+  function card(p, withDept){
+    return '<article class="kd-card"><a class="kd-card-link" href="#/read/' + p.slug + '">' +
+      (withDept ? '<span class="kd-card-dept">' + esc(DEPT_LABEL[p.dept]||"") + '</span>' : '') +
+      '<h3 class="kd-card-title">' + esc(p.title) + '</h3>' +
+      (p.subtitle ? '<p class="kd-card-sub">' + esc(p.subtitle) + '</p>' : '') +
+      '<p class="kd-card-excerpt">' + esc(excerpt(p.body)) + '</p>' +
+      '<p class="kd-card-meta">' + esc(fmtFull(p.date)) + ' \u00b7 ' + readTime(p.body) + '</p>' +
+      '</a></article>';
+  }
+
+  function viewHome(){
+    var html = '<section><div class="kd-contents-head kd-rise"><p class="kd-eyebrow">Contents</p><p class="kd-issue">an ongoing collection</p></div><div class="kd-rule"></div>';
+    DEPARTMENTS.forEach(function(d,i){
+      var list = deptList(d.key);
+      html += '<article class="kd-dept kd-rise" style="animation-delay:' + (120 + i*90) + 'ms">';
+      html += '<div class="kd-dept-head"><span class="kd-dept-num">' + d.roman + '</span>' +
+              '<a class="kd-dept-label" href="#/dept/' + d.key + '">' + esc(d.label) + '</a>' +
+              '<span class="kd-dept-note">' + esc(d.note) + '</span>' +
+              (list.length ? '<span class="kd-dept-count">' + list.length + '</span>' : '') + '</div>';
+      html += '<div class="kd-entries">';
+      if(!list.length) html += '<p class="kd-empty">Nothing here yet. This department is waiting for its first piece.</p>';
+      list.slice(0,3).forEach(function(p){
+        html += '<a class="kd-entry" href="#/read/' + p.slug + '"><span class="kd-entry-title">' + esc(p.title) + '</span><span class="kd-entry-dots" aria-hidden="true"></span><span class="kd-entry-year">' + yearOf(p.date) + '</span></a>';
+      });
+      if(list.length > 3) html += '<a class="kd-more" href="#/dept/' + d.key + '">all ' + list.length + ' pieces \u203a</a>';
+      html += '</div></article>';
+    });
+    html += '</section>';
+    return html;
+  }
+
+  function viewDept(key){
+    var d = null;
+    DEPARTMENTS.forEach(function(x){ if(x.key === key) d = x; });
+    if(!d) return viewHome();
+    var list = deptList(key);
+    var html = '<section class="kd-rise"><a class="kd-back" href="#/">\u2039 contents</a>';
+    html += '<header class="kd-dept-banner"><span class="kd-dept-num kd-big">' + d.roman + '</span><h2 class="kd-dept-title">' + esc(d.label) + '</h2><p class="kd-dept-note">' + esc(d.note) + '</p></header><div class="kd-rule"></div>';
+    if(!list.length) html += '<div class="kd-empty-block"><p class="kd-empty">No pieces here yet.</p></div>';
+    list.forEach(function(p){ html += card(p, false); });
+    html += '</section>';
+    return html;
+  }
+
+  function viewTag(tag){
+    var list = PIECES.filter(function(p){ return (p.tags||[]).indexOf(tag) >= 0; }).sort(byNewest);
+    var html = '<section class="kd-rise"><a class="kd-back" href="#/">\u2039 contents</a>';
+    html += '<header class="kd-dept-banner"><p class="kd-eyebrow">Tagged</p><h2 class="kd-dept-title">' + esc(tag) + '</h2><p class="kd-dept-note">' + list.length + ' ' + (list.length === 1 ? "piece" : "pieces") + '</p></header><div class="kd-rule"></div>';
+    list.forEach(function(p){ html += card(p, true); });
+    html += '</section>';
+    return html;
+  }
+
+  function viewRead(slug){
+    var p = findBySlug(slug);
+    if(!p) return viewHome();
+    var sibs = deptList(p.dept);
+    var idx = -1;
+    for(var i=0;i<sibs.length;i++){ if(sibs[i].slug === p.slug){ idx = i; break; } }
+    var prev = idx > 0 ? sibs[idx-1] : null;
+    var next = (idx >= 0 && idx < sibs.length-1) ? sibs[idx+1] : null;
+
+    var html = '<section class="kd-rise"><a class="kd-back" href="#/dept/' + p.dept + '">\u2039 ' + esc(DEPT_LABEL[p.dept]) + '</a>';
+    html += '<div class="kd-leaf">' + webSvg("kd-web-leaf", false);
+    html += '<p class="kd-read-eyebrow">' + esc(DEPT_LABEL[p.dept]) + ' \u00b7 ' + yearOf(p.date) + ' \u00b7 ' + readTime(p.body) + '</p>';
+    html += '<h1 class="kd-title">' + esc(p.title) + '</h1>';
+    if(p.subtitle) html += '<p class="kd-subtitle">' + esc(p.subtitle) + '</p>';
+    html += '<div class="kd-leaf-rule"></div>';
+    html += '<div class="kd-body">' + bodyHtml(p.body) + '</div>';
+    if((p.tags||[]).length){
+      html += '<div class="kd-tags">' + p.tags.map(function(t){
+        return '<a class="kd-tag" href="#/tag/' + encodeURIComponent(t) + '">' + esc(t) + '</a>';
+      }).join("") + '</div>';
+    }
+    html += '<p class="kd-read-date">' + esc(fmtFull(p.date)) + '</p>';
+    html += '</div>';
+
+    if(prev || next){
+      html += '<div class="kd-pager">';
+      html += prev ? '<a class="kd-pager-btn" href="#/read/' + prev.slug + '"><span class="kd-pager-dir">\u2039 Newer in ' + esc(DEPT_LABEL[p.dept]) + '</span><span class="kd-pager-title">' + esc(prev.title) + '</span></a>' : '<span></span>';
+      html += next ? '<a class="kd-pager-btn kd-pager-right" href="#/read/' + next.slug + '"><span class="kd-pager-dir">Older in ' + esc(DEPT_LABEL[p.dept]) + ' \u203a</span><span class="kd-pager-title">' + esc(next.title) + '</span></a>' : '<span></span>';
+      html += '</div>';
+    }
+    html += '</section>';
+    return html;
+  }
+
+  function updateProgress(){
+    if(parseRoute().name !== "read"){ progress.style.width = "0"; progress.style.opacity = "0"; return; }
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    progress.style.opacity = "1";
+    progress.style.width = (max > 0 ? Math.min(1, h.scrollTop / max) * 100 : 0) + "%";
+  }
+
+  function render(){
+    var route = parseRoute();
+    renderNav(route);
+    if(!loaded){ main.innerHTML = '<p class="kd-loading">Lighting the lamp\u2026</p>'; return; }
+    var html;
+    if(route.name === "dept") html = viewDept(route.dept);
+    else if(route.name === "tag") html = viewTag(route.tag);
+    else if(route.name === "read") html = viewRead(route.slug);
+    else html = viewHome();
+    main.innerHTML = html;
+    window.scrollTo(0,0);
+    updateProgress();
+  }
+
+  function assignSlugs(arr){
+    var seen = {};
+    arr.forEach(function(p){
+      p.tags = p.tags || [];
+      var base = slugify(p.title), s = base, n = 2;
+      while(seen[s]){ s = base + "-" + n; n++; }
+      seen[s] = true; p.slug = s;
+    });
+    return arr;
+  }
+
+  document.getElementById("randomBtn").onclick = function(){
+    if(!PIECES.length) return;
+    var p = PIECES[Math.floor(Math.random()*PIECES.length)];
+    location.hash = "#/read/" + p.slug;
+  };
+
+  window.addEventListener("scroll", updateProgress, { passive:true });
+  window.addEventListener("resize", updateProgress);
+  window.addEventListener("hashchange", render);
+
+  applyTheme();
+  buildEmbers();
+  document.getElementById("webbg").innerHTML = webSvg("kd-web-bg", true);
+  renderNav(parseRoute());
+
+  fetch("./content/pieces.json", { cache:"no-store" })
+    .then(function(r){ if(!r.ok) throw new Error("no content"); return r.json(); })
+    .then(function(data){ PIECES = assignSlugs((data && data.pieces) || []); loaded = true; render(); })
+    .catch(function(){ PIECES = []; loaded = true; render(); });
+})();
+</script>
+</body>
+</html>

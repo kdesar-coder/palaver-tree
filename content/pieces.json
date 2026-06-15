@@ -1,0 +1,36 @@
+{
+  "pieces": [
+    {
+      "title": "Morning, Osu",
+      "subtitle": "",
+      "dept": "poems",
+      "date": "2026-05-02",
+      "tags": ["accra", "morning"],
+      "body": "The kettle finds its voice before the city does.\nSteam writes a sentence on the window and erases it.\nSomewhere a trotro conductor calls a destination\nlike a line of verse he has not yet grown tired of.\n\nI drink my tea and let the day arrive\nthe way a guest arrives, unhurried, expected,\nalready half forgiven for being late."
+    },
+    {
+      "title": "The Borrowed Suit",
+      "subtitle": "an opening",
+      "dept": "stories",
+      "date": "2026-03-18",
+      "tags": ["fiction", "satire"],
+      "body": "Kweku owned exactly one good suit, and it belonged to his cousin. He had borrowed it for a funeral three years ago and the funeral, in a sense, had never quite ended. There was always another one to attend, another reason the suit could not yet go home.\n\nHis cousin had stopped asking. This, Kweku decided, was a form of generosity, and he intended to honour it for as long as the lining held."
+    },
+    {
+      "title": "On Laughing in the Lecture Hall",
+      "subtitle": "why comedy belongs in serious work",
+      "dept": "think",
+      "date": "2026-04-09",
+      "tags": ["pedagogy", "performance"],
+      "body": "We are taught to mistrust laughter in serious rooms, as though a joke were a leak in the argument. Yet the oldest teachers in this part of the world knew better. The storyteller by the fire did not choose between instruction and delight. She smuggled the lesson inside the laugh, and the laugh carried it further than solemnity ever could.\n\nA classroom that never laughs is not more rigorous. It is only quieter about what it has failed to make memorable."
+    },
+    {
+      "title": "What We Mean by Postcolonial",
+      "subtitle": "a word, unpacked",
+      "dept": "plain",
+      "date": "2026-02-27",
+      "tags": ["postcolonial", "method"],
+      "body": "The word arrives heavy with seminars, but the idea underneath it is plain enough to share at a table. It asks a simple question. After the soldiers and the flags have gone, who still owns the story? Whose language do we dream in, whose history fills the schoolbook, whose name is on the building?\n\nScholarship dresses this question in long clothes. Our task, when we write for a wider room, is to let it walk in barefoot and still be taken seriously."
+    }
+  ]
+}
