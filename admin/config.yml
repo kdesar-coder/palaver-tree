@@ -1,13 +1,10 @@
 # The Palaver Tree, editor configuration
-# After you create your GitHub repository, change the line below
-# from YOUR-USERNAME/YOUR-REPO to your own, for example  kobbyduncan/palaver-tree
 
 backend:
   name: github
   repo: kdesar-coder/palaver-tree
   branch: main
 
-# Where uploaded images would go, if you add any later
 media_folder: "assets/uploads"
 public_folder: "assets/uploads"
 
@@ -24,21 +21,32 @@ collections:
             label: "Pieces"
             label_singular: "Piece"
             widget: "list"
-            summary: "{{fields.title}}  ({{fields.dept}})"
+            summary: "{{fields.title}} ({{fields.dept}})"
             fields:
-              - { name: "title", label: "Title", widget: "string" }
-              - { name: "subtitle", label: "Subtitle", widget: "string", required: false }
-              - name: "dept"
-                label: "Department"
+              - label: "Title"
+                name: "title"
+                widget: "string"
+              - label: "Subtitle"
+                name: "subtitle"
+                widget: "string"
+                required: false
+              - label: "Department"
+                name: "dept"
                 widget: "select"
                 options:
                   - { label: "Poems", value: "poems" }
                   - { label: "Short Stories", value: "stories" }
                   - { label: "Think Pieces", value: "think" }
                   - { label: "In Plain Words", value: "plain" }
-             - { name: "date", label: "Date", widget: "datetime", type: date, format: "YYYY-MM-DD" }
-              - { name: "tags", label: "Tags", widget: "list", required: false }
-              - name: "body"
-                label: "The piece"
+              - label: "Date"
+                name: "date"
+                widget: "datetime"
+                type: date
+              - label: "Tags"
+                name: "tags"
+                widget: "list"
+                required: false
+              - label: "The piece"
+                name: "body"
                 widget: "text"
                 hint: "Leave a blank line between paragraphs or stanzas. Single line breaks are kept."
