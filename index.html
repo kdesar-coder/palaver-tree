@@ -280,6 +280,11 @@
 .kd-comments-head{ font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:22px; color:var(--strong); margin:0 0 18px; }
 .kd-comments-note{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.02em; color:var(--muted); margin:14px 0 0; }
 #cusdis_thread{ color-scheme:normal; }
+
+/* view counts */
+.kd-views{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.05em; color:var(--leaf-muted); margin:8px 0 0; }
+.kd-views:empty{ display:none; }
+.kd-foot .kd-views{ color:var(--muted); margin:0; }
 </style>
 </head>
 <body>
@@ -303,6 +308,7 @@
       <button class="kd-foot-link" id="randomBtn">Open something at random</button>
       <span class="kd-foot-dot">·</span>
       <a class="kd-foot-link" href="/admin/">Editor</a>
+      <span class="kd-views" data-count="TOTAL"></span>
     </footer>
   </div>
 </div>
@@ -356,6 +362,41 @@
       setMeta("Gallery \u00b7 " + SITE_NAME, "Images from " + SITE_NAME + ", each a door to its piece.", "/gallery"); return;
     }
     setMeta(SITE_NAME + " \u00b7 poems, stories, and plain scholarship", SITE_DESC, "/");
+  }
+
+  // ---- visitor counts (GoatCounter) ----
+  // Paste your GoatCounter code (the part before .goatcounter.com) between the quotes.
+  var GC_CODE = "palavertree";
+  function gcEnabled(){ return GC_CODE && GC_CODE.indexOf("PASTE-YOUR") !== 0; }
+  function gcHost(){ return "https://" + GC_CODE + ".goatcounter.com"; }
+  function ensureGoatScript(){
+    if(!gcEnabled() || document.getElementById("goat-sdk")) return;
+    var s = document.createElement("script");
+    s.id = "goat-sdk"; s.async = true;
+    s.setAttribute("data-goatcounter", gcHost() + "/count");
+    s.src = "//gc.zgo.at/count.js";
+    document.body.appendChild(s);
+  }
+  function gcHit(){
+    if(!gcEnabled()) return;
+    if(window.goatcounter && window.goatcounter.count){
+      window.goatcounter.count({ path: location.pathname });
+    }
+  }
+  function fillCounts(){
+    if(!gcEnabled()) return;
+    var els = document.querySelectorAll("[data-count]");
+    for(var i=0;i<els.length;i++){
+      (function(el){
+        var path = el.getAttribute("data-count");
+        var q = (path === "TOTAL") ? "TOTAL" : encodeURIComponent(path);
+        fetch(gcHost() + "/counter/" + q + ".json").then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+          if(!d || d.count == null) return;
+          if(path === "TOTAL"){ el.textContent = "\u00b7 " + d.count + " views"; }
+          else { el.textContent = "read " + d.count + (String(d.count).trim() === "1" ? " time" : " times"); }
+        }).catch(function(){});
+      })(els[i]);
+    }
   }
 
   var root = document.getElementById("root");
@@ -455,6 +496,7 @@
   function navigate(path){
     if(location.pathname !== path){ history.pushState(null, "", path); }
     render();
+    gcHit();
   }
 
   function deptList(key){ return PIECES.filter(function(p){ return p.dept === key; }).sort(byNewest); }
@@ -573,6 +615,7 @@
       }).join("") + '</div>';
     }
     html += '<p class="kd-read-date">' + esc(fmtFull(p.date)) + '</p>';
+    if(gcEnabled()) html += '<p class="kd-views" data-count="/read/' + p.slug + '"></p>';
     html += '</div>';
 
     if(prev || next){
@@ -678,6 +721,7 @@
     window.scrollTo(0,0);
     if(route.name === "gallery") setupGallery();
     if(route.name === "read") setupComments();
+    fillCounts();
     updateProgress();
   }
 
@@ -712,10 +756,11 @@
 
   window.addEventListener("scroll", updateProgress, { passive:true });
   window.addEventListener("resize", updateProgress);
-  window.addEventListener("popstate", render);
+  window.addEventListener("popstate", function(){ render(); gcHit(); });
 
   applyTheme();
   buildEmbers();
+  ensureGoatScript();
   document.getElementById("webbg").innerHTML = webSvg("kd-web-bg", true);
   renderNav(parseRoute());
 
