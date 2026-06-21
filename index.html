@@ -285,6 +285,12 @@
 .kd-views{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:12px; letter-spacing:.05em; color:var(--leaf-muted); margin:8px 0 0; }
 .kd-views:empty{ display:none; }
 .kd-foot .kd-views{ color:var(--muted); margin:0; }
+
+/* share */
+.kd-share{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:24px; }
+.kd-share-label{ font-family:'Hanken Grotesk', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.18em; font-size:11px; color:var(--muted); }
+.kd-share-net{ font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:13px; letter-spacing:.03em; color:var(--text); background:none; border:none; padding:0; cursor:pointer; transition:color .18s; }
+.kd-share-net:hover{ color:var(--gilt); }
 </style>
 </head>
 <body>
@@ -618,6 +624,16 @@
     if(gcEnabled()) html += '<p class="kd-views" data-count="/read/' + p.slug + '"></p>';
     html += '</div>';
 
+    var shareUrl = location.origin + "/read/" + p.slug;
+    html += '<div class="kd-share">' +
+      '<span class="kd-share-label">Share</span>' +
+      '<a class="kd-share-net" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(p.title + " " + shareUrl) + '">WhatsApp</a>' +
+      '<a class="kd-share-net" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text=' + encodeURIComponent(p.title) + '&url=' + encodeURIComponent(shareUrl) + '">X</a>' +
+      '<a class="kd-share-net" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl) + '">Facebook</a>' +
+      '<button class="kd-share-net" data-share="copy">Copy link</button>' +
+      '<button class="kd-share-net" data-share="native">More</button>' +
+      '</div>';
+
     if(prev || next){
       html += '<div class="kd-pager">';
       html += prev ? '<a class="kd-pager-btn" href="/read/' + prev.slug + '"><span class="kd-pager-dir">\u2039 Newer in ' + esc(DEPT_LABEL[p.dept]) + '</span><span class="kd-pager-title">' + esc(prev.title) + '</span></a>' : '<span></span>';
@@ -697,6 +713,35 @@
     if(window.CUSDIS && typeof window.CUSDIS.initial === "function"){ window.CUSDIS.initial(); }
   }
 
+  function setupShare(p){
+    var box = main.querySelector(".kd-share");
+    if(!box || !p) return;
+    var url = location.origin + "/read/" + p.slug;
+    var nativeBtn = box.querySelector('[data-share="native"]');
+    if(nativeBtn){
+      if(navigator.share){
+        nativeBtn.addEventListener("click", function(){ navigator.share({ title: p.title, text: p.title, url: url }).catch(function(){}); });
+      } else {
+        nativeBtn.style.display = "none";
+      }
+    }
+    var copyBtn = box.querySelector('[data-share="copy"]');
+    if(copyBtn){
+      copyBtn.addEventListener("click", function(){
+        var label = copyBtn.textContent;
+        var done = function(){ copyBtn.textContent = "Copied"; setTimeout(function(){ copyBtn.textContent = label; }, 1600); };
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(url).then(done).catch(done);
+        } else {
+          var ta = document.createElement("textarea"); ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.focus(); ta.select();
+          try { document.execCommand("copy"); } catch(e){}
+          document.body.removeChild(ta); done();
+        }
+      });
+    }
+  }
+
   function updateProgress(){
     if(parseRoute().name !== "read"){ progress.style.width = "0"; progress.style.opacity = "0"; return; }
     var h = document.documentElement;
@@ -720,7 +765,7 @@
     main.innerHTML = html;
     window.scrollTo(0,0);
     if(route.name === "gallery") setupGallery();
-    if(route.name === "read") setupComments();
+    if(route.name === "read"){ setupComments(); setupShare(findBySlug(route.slug)); }
     fillCounts();
     updateProgress();
   }
